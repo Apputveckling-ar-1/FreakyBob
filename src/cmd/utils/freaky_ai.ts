@@ -37,13 +37,13 @@ export default {
     });
     console.log(`\n\nAI Command:\n(${ctx.user.tag}) Input: ${input}`);
     const channel = dmBool
-      ? (await ctx.guild?.members.cache
+      ? ((await ctx.guild?.members.cache
           .find((f) => f.id === ctx.user.id)
-          ?.createDM() as DMChannel)
+          ?.createDM()) as DMChannel)
       : (ctx.channel as TextChannel);
     await ollama
       .chat({
-        model: "llama3.1:8b",
+        model: "llama3.2",
         messages: [
           {
             role: "user",
