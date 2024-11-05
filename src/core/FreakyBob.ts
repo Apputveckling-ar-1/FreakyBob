@@ -20,6 +20,7 @@ const defaultGlob = new Glob(`**/*{.ts,.js}`);
 
 export default class FreakyBob extends Client {
   commands: Collection<string, Command> = new Collection();
+  disabledCommands: string[] = ["freaky"];
   constructor() {
     super({
       intents: Object.keys(GatewayIntentBits) as GatewayIntentsString[],
@@ -43,6 +44,14 @@ export default class FreakyBob extends Client {
     this.registerCommands(cmds);
     this.registerEvents();
     this.login(env.TOKEN as string);
+  }
+
+  public commandDisabled(commandName: string) {
+    return this.disabledCommands.filter(
+      (f) => f.toLowerCase() === commandName.toLowerCase()
+    ).length > 0
+      ? true
+      : false;
   }
 
   private async importFile(filePath: string) {
