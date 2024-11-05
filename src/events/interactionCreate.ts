@@ -3,6 +3,7 @@ import { client } from "..";
 import { Event } from "../core/types/Event";
 import type { ExtendedInteraction } from "../core/types/Command";
 import { env } from "bun";
+import { confirmPurgeButton } from "../utils/prompts";
 
 export default new Event("interactionCreate", (i) => {
   if (i.isCommand()) {
@@ -27,5 +28,9 @@ export default new Event("interactionCreate", (i) => {
       client: client,
       ctx: i as ExtendedInteraction,
     });
+  }
+
+  if(i.isButton()) {
+    if(i.customId === "confirm_button_purge") confirmPurgeButton(i)
   }
 });

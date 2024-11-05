@@ -78,7 +78,7 @@ export default class FreakyBob extends Client {
     const rest = new REST().setToken(env.TOKEN as string);
     try {
       console.log("Refreshing commands (/)");
-      const data = await rest.put(
+      await rest.put(
         Routes.applicationGuildCommands(
           env.CLIENT_ID as Snowflake,
           env.GUILD_ID as string
