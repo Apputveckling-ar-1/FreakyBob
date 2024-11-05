@@ -1,4 +1,8 @@
-import { ApplicationCommandOptionType, TextChannel } from "discord.js";
+import {
+  ApplicationCommandOptionType,
+  DMChannel,
+  TextChannel,
+} from "discord.js";
 import type { Command } from "../../core/types/Command";
 import ollama from "ollama";
 import { defaultPrompt } from "../../utils/ollama";
@@ -13,21 +17,33 @@ export default {
       type: ApplicationCommandOptionType.String,
       required: true,
     },
+    {
+      name: "dm",
+      description: "dm the response to you",
+      type: ApplicationCommandOptionType.Boolean,
+      required: false,
+    },
   ],
   run: async ({ ctx, args }) => {
     const input = args.getString("input");
+    const dmBool = args.getBoolean("dm") ?? false;
     if (!input) {
       ctx.reply({ content: "C'mon man give me some text", ephemeral: true });
     }
-    console.log(input);
+
     let msg = await ctx.reply({
-      content: `Generating response...`,
+      content: `Generating response... (this may take awhile)`,
       ephemeral: true,
     });
-
-    const res = await ollama
+    console.log(`\n\nAI Command:\n(${ctx.user.tag}) Input: ${input}`);
+    const channel = dmBool
+      ? (await ctx.guild?.members.cache
+          .find((f) => f.id === ctx.user.id)
+          ?.createDM() as DMChannel)
+      : (ctx.channel as TextChannel);
+    await ollama
       .chat({
-        model: "llama3.2",
+        model: "llama3.1:8b",
         messages: [
           {
             role: "user",
@@ -37,10 +53,22 @@ export default {
       })
       .then((r) => {
         msg.delete().catch(() => null);
-
-        (ctx.channel as TextChannel).send({
-          content: r.message.content,
-        });
+        console.log(`Response: ${r.message.content}\n\n`);
+        channel
+          .send({
+            content: r.message.content,
+          })
+          .catch(() => {
+            if (dmBool) {
+              ctx.reply({
+                content: `Your dms were closed so whoops!`,
+                ephemeral: true,
+              });
+            }
+            (ctx.channel as TextChannel).send({
+              content: r.message.content,
+            });
+          });
       });
   },
 } as Command;
